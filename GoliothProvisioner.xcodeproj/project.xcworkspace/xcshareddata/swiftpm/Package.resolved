@@ -1,0 +1,43 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "Alamofire",
+        "repositoryURL": "https://github.com/Alamofire/Alamofire.git",
+        "state": {
+          "branch": null,
+          "revision": "d120af1e8638c7da36c8481fd61a66c0c08dc4fc",
+          "version": "5.4.4"
+        }
+      },
+      {
+        "package": "McuManager",
+        "repositoryURL": "https://github.com/JuulLabs-OSS/mcumgr-ios.git",
+        "state": {
+          "branch": "master",
+          "revision": "a57030560c4b63b8ffd32b602a842dfbe7768308",
+          "version": null
+        }
+      },
+      {
+        "package": "Slugify",
+        "repositoryURL": "https://github.com/nodes-vapor/slugify",
+        "state": {
+          "branch": null,
+          "revision": "2231b5cff8e08693e4036a03b7220e93340fcae0",
+          "version": "2.0.0"
+        }
+      },
+      {
+        "package": "SwiftCBOR",
+        "repositoryURL": "https://github.com/unrelentingtech/SwiftCBOR.git",
+        "state": {
+          "branch": "master",
+          "revision": "f977c72dac56c11ddbabc04f6a39c6a33f015be8",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}
