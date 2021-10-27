@@ -7,6 +7,7 @@
 import UIKit
 import Slugify
 import CoreBluetooth
+import SwiftCBOR
 import McuManager
 
 class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDelegate {
@@ -38,12 +39,13 @@ class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDe
     
     private var currentPeripheral: CBPeripheral?
     private var currentGoliothDevice: GoliothDevice?
+    private var currentHwId: String?
     
     @IBAction func findOrCreateTapped(_ sender: UIButton) {
-        //sendEcho(message: "hello")
-        if (self.currentPeripheral != nil){
+        readDeviceInfo()
+        if (self.currentHwId != nil && self.currentPeripheral != nil){
             let name = self.currentPeripheral!.name!
-            let hwId = self.currentPeripheral!.name!.slugify()
+            let hwId = self.currentHwId!
             GoliothAPI.findOrCreateDeviceByHardwareId(deviceName: name, hwId: hwId) { device in
                 if device != nil {
                     self.currentGoliothDevice = device
@@ -64,10 +66,10 @@ class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDe
     
     @IBAction func recreateCredentialsTapped(_ sender: UIButton) {
         //sendEcho(message: "hello")
-        if (self.currentGoliothDevice != nil) {
+        if (self.currentGoliothDevice != nil && self.currentHwId != nil) {
             let deviceId = self.currentGoliothDevice!.id
             GoliothAPI.deleteAllDeviceCredentials(deviceId: deviceId) {
-                let pskId = self.currentPeripheral!.name!.slugify() + self.randomAlphaNumericString(length: 8)
+                let pskId = self.currentHwId! + self.randomAlphaNumericString(length: 8)
                 let psk = self.randomAlphaNumericString(length: 8)
                 GoliothAPI.createCredentialForDevice(deviceId: deviceId, pskId: pskId, psk: psk) { credential in
                     if credential != nil {
@@ -104,7 +106,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDe
     }
     
     @IBAction func connectTapped(_ sender: UIButton) {
-        sendEcho(message: "hello")
+        readDeviceInfo()
     }
     
     @IBAction func sendWifiSsidTapped(_ sender: UIButton) {
@@ -211,14 +213,18 @@ class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDe
         return true
     }
     
-    private func sendEcho(message: String) {
+    private func readDeviceInfo() {
         self.connectResponse.isHidden = true
         self.connectResponseBackground.isHidden = true
                 
-        defaultManager.echo(message) { (response, error) in
+        configManager.read(name: "hwinfo/id") { response, error in
             if let response = response {
-                self.connectResponse.text = "Device connected, replied with: " + ( response.response ?? "-" )
-                self.connectResponseBackground.tintColor = .zephyr
+                if case let CBOR.byteString(val)? = response.payload?["val"] {
+                    let val = String(bytes: val, encoding: String.Encoding.utf8)                    
+                    self.connectResponse.text = "Device connected, replied with: " + ( val ?? "-" )
+                    self.currentHwId = val
+                    self.connectResponseBackground.tintColor = .zephyr
+                }
             }
             if let error = error {
                 self.connectResponse.text = "\(error.localizedDescription)"
@@ -233,7 +239,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDe
         received.isHidden = true
         receivedBackground.isHidden = true
         
-        configManager.write(name: key, value: message) {                (response, error) in
+        configManager.write(name: key, value: message) { (response, error) in
             if let response = response {
                 received.text = response.returnCode.description
                 receivedBackground.tintColor = .zephyr
