@@ -217,7 +217,7 @@ class DeviceController: UITableViewController, UITextFieldDelegate, PeripheralDe
         self.connectResponse.isHidden = true
         self.connectResponseBackground.isHidden = true
                 
-        configManager.read(name: "hwinfo/id") { response, error in
+        configManager.read(name: "hwinfo/devid") { response, error in
             if let response = response {
                 if case let CBOR.byteString(val)? = response.payload?["val"] {
                     let val = String(bytes: val, encoding: String.Encoding.utf8)                    
